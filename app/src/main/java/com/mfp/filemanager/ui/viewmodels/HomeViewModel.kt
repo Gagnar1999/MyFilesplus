@@ -1,8 +1,12 @@
 package com.mfp.filemanager.ui.viewmodels
 
+import android.app.Application
+import android.text.format.Formatter
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.mfp.filemanager.data.CategoryItem
 import com.mfp.filemanager.data.FileOperationManager
 import com.mfp.filemanager.data.clipboard.ClipboardOperation
 import com.mfp.filemanager.data.FileModel
@@ -17,6 +21,7 @@ import com.mfp.filemanager.ui.SortOrder
 import com.mfp.filemanager.ui.ViewType
 import com.mfp.filemanager.data.OperationStatus
 import com.mfp.filemanager.data.OperationType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,13 +35,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOn
 import java.io.File
 
 
 class HomeViewModel(
+    application: Application,
     private val repository: FileRepository,
     private val settingsRepository: SettingsRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _hasUsageAccess = MutableStateFlow(false)
     var hasStorageAnimated: Boolean
@@ -46,8 +53,58 @@ class HomeViewModel(
 
 
     private val _storageInfo = MutableStateFlow(StorageInfo.EMPTY)
-    val storageInfo: StateFlow<StorageInfo> = _storageInfo
+    val storageInfo = _storageInfo.asStateFlow()
 
+    val categories: StateFlow<List<CategoryItem>> =
+        _storageInfo
+            .map { storageInfo ->
+                val total = listOf(
+                    storageInfo.videoBytes,
+                    storageInfo.imageBytes,
+                    storageInfo.appBytes,
+                    storageInfo.documentBytes
+                ).sum()
+
+                fun progress(bytes: Long) =
+                    if (total == 0L) 0f else bytes.toFloat() / total
+
+                listOf(
+                    CategoryItem(
+                        id = "1",
+                        label = "Videos",
+                        storageUsed = storageInfo.videoBytes,
+                        storageUsedReadable = Formatter.formatFileSize(application.applicationContext, storageInfo.videoBytes),
+                        progress = progress(storageInfo.videoBytes)
+                    ),
+                    CategoryItem(
+                        id = "2",
+                        label = "Images",
+                        storageUsed = storageInfo.imageBytes,
+                        storageUsedReadable = Formatter.formatFileSize(application.applicationContext, storageInfo.imageBytes),
+                        progress = progress(storageInfo.imageBytes)
+                    ),
+                    CategoryItem(
+                        id = "3",
+                        label = "Apps",
+                        storageUsed = storageInfo.appBytes,
+                        storageUsedReadable = Formatter.formatFileSize(application.applicationContext, storageInfo.appBytes),
+                        progress = progress(storageInfo.appBytes)
+                    ),
+                    CategoryItem(
+                        id = "4",
+                        label = "Docs",
+                        storageUsed = storageInfo.documentBytes,
+                        storageUsedReadable = Formatter.formatFileSize(application.applicationContext, storageInfo.documentBytes),
+                        progress = progress(storageInfo.documentBytes)
+                    )
+                )
+            }
+            .flowOn(Dispatchers.IO)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -1422,11 +1479,11 @@ class HomeViewModel(
 
 }
 
-class HomeViewModelFactory(private val repository: FileRepository, private val settingsRepository: SettingsRepository) : ViewModelProvider.Factory {
+class HomeViewModelFactory(private val application : Application, private val repository: FileRepository, private val settingsRepository: SettingsRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(repository, settingsRepository) as T
+            return HomeViewModel(application, repository, settingsRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

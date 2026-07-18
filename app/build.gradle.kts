@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("kotlin-parcelize")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 val keystorePropertiesFile = rootProject.file("signing/keystore.properties")
@@ -16,13 +17,13 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.mfp.filemanager"
-    compileSdk = 35
+    compileSdk = 36
 
 
     defaultConfig {
         applicationId = "com.mfp.filemanager"
         minSdk = 24 
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 11
         versionName = "1.4.0"
 
@@ -75,9 +76,14 @@ android {
         checkReleaseBuilds = false
     }
     buildToolsVersion = "34.0.0"
+
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
+
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
@@ -91,11 +97,29 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
+    //Compose BOM
+    implementation(platform("androidx.compose:compose-bom:2026.06.01"))
+    implementation ("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation ("androidx.compose.runtime:runtime")
+    implementation ("androidx.activity:activity-compose:1.13.0")
+    implementation ("androidx.compose.ui:ui-graphics")
+    implementation ("androidx.compose.ui:ui-tooling-preview")
+
+    //Theme adapter required for getting colors from xml
+    implementation("com.google.accompanist:accompanist-themeadapter-material3:0.36.0")
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+    //Compose <---> Fragment Bridge
+    // Image Loading (Coil View)
+    implementation("androidx.fragment:fragment-compose:1.8.9")
+
     // Image Loading (Coil View)
     implementation("io.coil-kt:coil:2.7.0")
     implementation("io.coil-kt:coil-video:2.7.0")
     implementation("jp.wasabeef.transformers:coil:1.0.6")
-    
+
     implementation("com.google.code.gson:gson:2.13.2")
 
     // Debugging

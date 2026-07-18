@@ -28,6 +28,7 @@ class RecentFilesFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(
+            requireActivity().application,
             FileRepository(requireContext().applicationContext),
             SettingsRepository(requireContext().applicationContext)
         )

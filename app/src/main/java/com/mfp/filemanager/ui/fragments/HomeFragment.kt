@@ -56,6 +56,7 @@ class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by activityViewModels {
         HomeViewModelFactory(
+            requireActivity().application,
             FileRepository(requireContext().applicationContext),
             SettingsRepository(requireContext().applicationContext)
         )

@@ -23,6 +23,12 @@ import coil.load
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
+import android.util.Log
+import android.view.ViewGroup
+import android.view.WindowInsets
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.mfp.filemanager.data.FileOperationManager
 import com.mfp.filemanager.data.clipboard.ClipboardOperation
 import com.mfp.filemanager.data.clipboard.TransferStatus
@@ -30,6 +36,8 @@ import com.mfp.filemanager.ui.FileProgressController
 import com.mfp.filemanager.data.OperationStatus
 import com.mfp.filemanager.data.OperationType
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 
 class MainActivity : AppCompatActivity() {
 
@@ -85,7 +93,15 @@ class MainActivity : AppCompatActivity() {
         
         try {
             binding = ActivityMainBinding.inflate(layoutInflater)
+            enableEdgeToEdge()
             setContentView(binding.root)
+
+            ViewCompat.setOnApplyWindowInsetsListener(binding.root){v, windowInsets ->
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.updatePadding(insets.left, insets.top, insets.right, insets.bottom )
+                WindowInsetsCompat.CONSUMED
+            }
+
 
             val navHostFragment = supportFragmentManager
                 .findFragmentById(R.id.nav_host_fragment) as NavHostFragment

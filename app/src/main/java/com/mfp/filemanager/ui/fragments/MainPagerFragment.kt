@@ -79,7 +79,7 @@ class MainPagerFragment : Fragment() {
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> HomeFragment()
+                0 -> HomeFragmentCompose()
                 1 -> MusicFragment()
                 2 -> TrashFragment()
                 3 -> SettingsFragment()
