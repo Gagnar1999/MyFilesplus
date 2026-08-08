@@ -2,6 +2,7 @@ package com.mfp.filemanager.ui.viewmodels
 
 import android.app.Application
 import android.text.format.Formatter
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -36,6 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onStart
 import java.io.File
 
 
@@ -57,6 +59,39 @@ class HomeViewModel(
 
     val categories: StateFlow<List<CategoryItem>> =
         _storageInfo
+            .onStart {
+                Log.d("VM", "on start executed")
+                listOf(
+                    CategoryItem(
+                        id = "1",
+                        label = "Videos",
+                        storageUsed = 0,
+                        storageUsedReadable = "Calculating .....",
+                        progress = 0f
+                    ),
+                    CategoryItem(
+                        id = "2",
+                        label = "Images",
+                        storageUsed = 0,
+                        storageUsedReadable = "Calculating .....",
+                        progress = 0f
+                    ),
+                    CategoryItem(
+                        id = "3",
+                        label = "Apps",
+                        storageUsed = 0,
+                        storageUsedReadable = "Calculating .....",
+                        progress = 0f
+                    ),
+                    CategoryItem(
+                        id = "4",
+                        label = "Docs",
+                        storageUsed = 0,
+                        storageUsedReadable = "Calculating .....",
+                        progress = 0f
+                    )
+                )
+            }
             .map { storageInfo ->
                 val total = listOf(
                     storageInfo.videoBytes,
@@ -99,7 +134,7 @@ class HomeViewModel(
                     )
                 )
             }
-            .flowOn(Dispatchers.IO)
+            .flowOn(Dispatchers.Default)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5000),
@@ -147,6 +182,7 @@ class HomeViewModel(
 
     private val _dailyUsageRate = MutableStateFlow<Long>(0)
     val dailyUsageRate: StateFlow<Long> = _dailyUsageRate.asStateFlow()
+
 
     // Derived state for estimated full date
     val estimatedFullDate: StateFlow<String> = combine(_storageInfo, _dailyUsageRate) { info, rate ->
@@ -316,7 +352,7 @@ class HomeViewModel(
 
     fun performSearch(query: String) {
         searchJob?.cancel()
-        searchJob = viewModelScope.launch {
+        searchJob = viewModelScope.launch(Dispatchers.Default) {
             delay(200) // Small debounce for smooth typing
             _isLoading.value = true
             try {
@@ -674,7 +710,7 @@ class HomeViewModel(
     fun loadRecentFiles() {
         viewModelScope.launch {
              try {
-                val allRecent = repository.getRecentFiles(showHidden = showHiddenFiles.value)
+                val allRecent = repository.getRecentFiles(showHidden = showHiddenFiles.value, limit = 10)
                 _recentFiles.value = allRecent
             } catch (e: Exception) {
                 showMessage("Error loading recent files: ${e.message}")
@@ -1475,6 +1511,10 @@ class HomeViewModel(
 
     fun clearBrowserSelection() {
         _selectedBrowserFiles.value = emptySet()
+    }
+
+    fun testFnct(inter : String){
+
     }
 
 }

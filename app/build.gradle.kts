@@ -119,6 +119,8 @@ dependencies {
     implementation("io.coil-kt:coil:2.7.0")
     implementation("io.coil-kt:coil-video:2.7.0")
     implementation("jp.wasabeef.transformers:coil:1.0.6")
+    implementation("io.coil-kt.coil3:coil-compose:3.5.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
 
     implementation("com.google.code.gson:gson:2.13.2")
 

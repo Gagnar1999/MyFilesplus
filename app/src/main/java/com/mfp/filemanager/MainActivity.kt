@@ -27,6 +27,8 @@ import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowInsets
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mfp.filemanager.data.FileOperationManager
@@ -38,6 +40,8 @@ import com.mfp.filemanager.data.OperationType
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mfp.filemanager.ui.components.MiniPlayer
 
 class MainActivity : AppCompatActivity() {
 
@@ -217,7 +221,6 @@ class MainActivity : AppCompatActivity() {
         transition.setDuration(android.animation.LayoutTransition.DISAPPEARING, 300)
         transition.enableTransitionType(android.animation.LayoutTransition.CHANGING)
         binding.bottomBarContainer.layoutTransition = transition
-        setupGlassMorphism()
         
         // Initialize Progress Controller
         // 'file_progress_layout' in activity_main.xml includes '@layout/layout_file_progress'
@@ -267,7 +270,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupMiniPlayer() {
-        val playerNavOptions = navOptions {
+        val playerNavOptions = navOptions{
             anim {
                 enter = R.anim.pop_enter
                 exit = R.anim.pop_exit
@@ -276,55 +279,35 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val miniPlayerAnimator = android.animation.ObjectAnimator.ofFloat(binding.imgMiniAlbumArt, "rotation", 0f, 360f).apply {
-            duration = 8000
-            repeatCount = android.animation.ObjectAnimator.INFINITE
-            interpolator = android.view.animation.LinearInterpolator()
+        binding.layoutMiniPlayer.setContent {
+            val isPlaying by audioViewModel.isPlaying.collectAsStateWithLifecycle()
+            val currentTrack by audioViewModel.currentTrack.collectAsStateWithLifecycle()
+            val progress by audioViewModel.progress.collectAsStateWithLifecycle()
+
+            MiniPlayer(
+                title = currentTrack?.title.toString(),
+                artist = currentTrack?.artist.toString(),
+                isPlaying = isPlaying,
+                progress = progress,
+                onPlayPause = {
+                    audioViewModel.togglePlayPause()
+                },
+                onNext = {
+                    audioViewModel.playNext()
+                },
+                onClose = {
+                    audioViewModel.stopPlayer()
+                },
+                modifier = Modifier
+            )
         }
 
-        // Helper for pop effect
-        fun animateClick(view: View) {
-             view.animate()
-                .scaleX(0.8f)
-                .scaleY(0.8f)
-                .setDuration(80)
-                .setInterpolator(android.view.animation.AccelerateDecelerateInterpolator())
-                .withEndAction {
-                    view.animate()
-                        .scaleX(1.0f)
-                        .scaleY(1.0f)
-                        .setDuration(80)
-                        .setInterpolator(android.view.animation.AccelerateDecelerateInterpolator())
-                        .start()
-                }
-                .start()
-        }
 
         // Set initial state to GONE to prevent flash on recreation
         binding.layoutMiniPlayer.visibility = View.GONE
 
         binding.layoutMiniPlayer.setOnClickListener {
             navController.navigate(R.id.nav_player, null, playerNavOptions)
-        }
-
-        binding.btnMiniPlayPause.setOnClickListener {
-            animateClick(it)
-            audioViewModel.togglePlayPause()
-        }
-        
-        binding.btnMiniPrev.setOnClickListener {
-            animateClick(it)
-            audioViewModel.playPrevious()
-        }
-
-        binding.btnMiniNext.setOnClickListener {
-            animateClick(it)
-            audioViewModel.playNext()
-        }
-
-        binding.btnMiniClose.setOnClickListener {
-            animateClick(it)
-            audioViewModel.stopPlayer()
         }
 
         lifecycleScope.launch {
@@ -351,26 +334,6 @@ class MainActivity : AppCompatActivity() {
                                     .setInterpolator(android.view.animation.DecelerateInterpolator())
                                     .start()
                             }
-                            binding.textMiniTitle.text = metadata.title ?: "Unknown"
-                            binding.textMiniArtist.text = metadata.artist ?: "Unknown"
-                            binding.imgMiniAlbumArt.load(metadata.artworkUri) {
-                                placeholder(R.drawable.ic_music_note_24)
-                                error(R.drawable.ic_music_note_24)
-                                listener(onSuccess = { _, result ->
-                                    val drawable = result.drawable
-                                    val bitmap = (drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
-                                    
-                                    bitmap?.let { b ->
-                                        androidx.palette.graphics.Palette.from(b).generate { palette ->
-                                            val color = palette?.getVibrantColor(android.graphics.Color.GRAY) 
-                                                ?: palette?.getDominantColor(android.graphics.Color.GRAY)
-                                                ?: android.graphics.Color.GRAY
-                                            
-                                            binding.imgMiniAlbumArt.strokeColor = android.content.res.ColorStateList.valueOf(color)
-                                        }
-                                    }
-                                })
-                            }
                         } else { // Metadata null (stopped or cleared)
                              if (binding.layoutMiniPlayer.isVisible) {
                                  val hideTranslation = 500f
@@ -382,8 +345,6 @@ class MainActivity : AppCompatActivity() {
                                     .setDuration(250)
                                     .withEndAction { 
                                         binding.layoutMiniPlayer.visibility = View.GONE
-                                        miniPlayerAnimator.cancel()
-                                        binding.imgMiniAlbumArt.rotation = 0f
                                         // Reset alpha/scale for layout preview or next show
                                         binding.layoutMiniPlayer.alpha = 1f
                                         binding.layoutMiniPlayer.scaleX = 1f
@@ -392,33 +353,6 @@ class MainActivity : AppCompatActivity() {
                                     .start()
                              }
                         }
-                    }
-                }
-
-                launch {
-                    audioViewModel.isPlaying.collect { isPlaying ->
-                        binding.btnMiniPlayPause.setImageResource(
-                            if (isPlaying) R.drawable.ic_pause_24 else R.drawable.ic_play_arrow_24
-                        )
-                        
-                        if (isPlaying) {
-                            if (miniPlayerAnimator.isPaused) miniPlayerAnimator.resume() else miniPlayerAnimator.start()
-                        } else {
-                            miniPlayerAnimator.pause()
-                        }
-
-                        binding.btnMiniPlayPause.animate()
-                            .scaleX(1.2f)
-                            .scaleY(1.2f)
-                            .setDuration(120)
-                            .withEndAction {
-                                binding.btnMiniPlayPause.animate()
-                                    .scaleX(1.0f)
-                                    .scaleY(1.0f)
-                                    .setDuration(120)
-                                    .start()
-                            }
-                            .start()
                     }
                 }
 
@@ -508,19 +442,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setupGlassMorphism() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Amplify blur to 80f for 'Liquid Glass' distortion
-            val blurEffect = RenderEffect.createBlurEffect(
-                80f, 80f,
-                Shader.TileMode.CLAMP
-            )
-            binding.taskbarBlurLayer.setRenderEffect(blurEffect)
-            // Apply same effect to mini player
-            binding.miniPlayerBlurLayer.setRenderEffect(blurEffect)
-        }
-        
-
-        
         // Observe Swipe Navigation Setting
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {

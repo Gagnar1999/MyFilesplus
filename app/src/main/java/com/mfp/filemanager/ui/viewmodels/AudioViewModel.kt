@@ -15,6 +15,10 @@ import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -33,6 +37,17 @@ class AudioViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _duration = MutableStateFlow(0L)
     val duration = _duration.asStateFlow()
+
+    val progress: StateFlow<Float> =
+        combine(_position, _duration) { position, duration ->
+            if (duration <= 0L) 0f
+            else (position.toFloat() / duration.toFloat())
+                .coerceIn(0f, 1f)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 0f
+        )
 
     private val _shuffleEnabled = MutableStateFlow(false)
     val shuffleEnabled = _shuffleEnabled.asStateFlow()
