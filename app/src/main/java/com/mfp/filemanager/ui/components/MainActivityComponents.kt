@@ -1,5 +1,6 @@
 package com.mfp.filemanager.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,9 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.request.ImageRequest
 import coil3.compose.AsyncImage
 
 @Composable
@@ -47,15 +51,13 @@ fun MiniPlayer(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val musicPainter = rememberVectorPainter(image = Icons.Default.MusicNote)
     Box(modifier.padding(vertical = 10.dp)) {
         Card(
             modifier = modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            ),
+            shape = RoundedCornerShape(18.dp),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 2.dp
             )
@@ -77,14 +79,7 @@ fun MiniPlayer(
                                 MaterialTheme.colorScheme.surfaceContainerHighest
                             ), contentAlignment = Alignment.Center
                     ) {
-                        AsyncImage(
-                            model = title,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                        Image(musicPainter, contentDescription = null, colorFilter = ColorFilter.tint( color = MaterialTheme.colorScheme.onPrimaryContainer))
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -143,7 +138,7 @@ fun MiniPlayer(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            start = 12.dp, end = 12.dp, bottom = 8.dp
+                            start = 12.dp, end = 12.dp, bottom = 8.dp, top = 4.dp
                         )
                         .height(3.dp)
                         .clip(CircleShape)

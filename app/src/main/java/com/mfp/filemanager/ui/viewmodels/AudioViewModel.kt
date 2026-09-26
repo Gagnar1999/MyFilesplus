@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -137,6 +138,7 @@ class AudioViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun playNext() {
+        _position.update { 0 }
         mediaController?.seekToNext()
     }
 

@@ -1,47 +1,41 @@
 package com.mfp.filemanager
 
-import android.graphics.Rect
-
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.fragment.NavHostFragment
-import com.mfp.filemanager.databinding.ActivityMainBinding
-import com.mfp.filemanager.data.SettingsRepository
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.flow.first
-import androidx.activity.viewModels
-import com.mfp.filemanager.ui.viewmodels.AudioViewModel
-import com.mfp.filemanager.ui.viewmodels.MainViewModel
-import androidx.navigation.NavController
-import androidx.navigation.navOptions
-import android.content.res.Configuration
-import coil.load
-import android.graphics.RenderEffect
-import android.graphics.Shader
-import android.os.Build
-import android.util.Log
-import android.view.ViewGroup
-import android.view.WindowInsets
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.mfp.filemanager.data.FileOperationManager
-import com.mfp.filemanager.data.clipboard.ClipboardOperation
-import com.mfp.filemanager.data.clipboard.TransferStatus
-import com.mfp.filemanager.ui.FileProgressController
-import com.mfp.filemanager.data.OperationStatus
-import com.mfp.filemanager.data.OperationType
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.navOptions
+import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import com.mfp.filemanager.data.FileOperationManager
+import com.mfp.filemanager.data.OperationStatus
+import com.mfp.filemanager.data.OperationType
+import com.mfp.filemanager.data.SettingsRepository
+import com.mfp.filemanager.data.cache.AppCache
+import com.mfp.filemanager.data.clipboard.ClipboardOperation
+import com.mfp.filemanager.data.clipboard.TransferStatus
+import com.mfp.filemanager.databinding.ActivityMainBinding
+import com.mfp.filemanager.security.PermissionHelper
+import com.mfp.filemanager.ui.FileProgressController
 import com.mfp.filemanager.ui.components.MiniPlayer
+import com.mfp.filemanager.ui.viewmodels.AudioViewModel
+import com.mfp.filemanager.ui.viewmodels.MainViewModel
+import com.mfp.filemanager.utils.ThemeHelper
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
 
@@ -52,33 +46,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fileProgressController: FileProgressController
 
     private var isSwipeNavEnabled = false
+    private val themeHelper by lazy { ThemeHelper(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settingsRepository = SettingsRepository(applicationContext)
         val themeMode = runBlocking { settingsRepository.themeMode.first() }
         isSwipeNavEnabled = runBlocking { settingsRepository.swipeNavigationEnabled.first() }
-        
-        when (themeMode) {
-            1 -> setTheme(R.style.Theme_FileManager) // Light
-            2 -> setTheme(R.style.Theme_FileManager_Dark) // Dark (Grey)
-            3 -> setTheme(R.style.Theme_FileManager_Amoled) // Amoled (Black)
-            else -> {
-                // System Default
-                val isNight = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-                if (isNight) {
-                    setTheme(R.style.Theme_FileManager_Dark)
-                } else {
-                    setTheme(R.style.Theme_FileManager)
-                }
-            }
-        }
+        themeHelper.setTheme(themeMode)
 
         super.onCreate(savedInstanceState)
 
         // Check Permissions
         try {
-            if (!com.mfp.filemanager.security.PermissionHelper.hasStoragePermission(this) || 
-                !com.mfp.filemanager.security.PermissionHelper.hasUsageStatsPermission(this)) {
+            if (!PermissionHelper.hasStoragePermission(this) ||
+                !PermissionHelper.hasUsageStatsPermission(this)) {
                 startActivity(android.content.Intent(this, OnboardingActivity::class.java))
                 finish()
                 return
@@ -188,30 +169,6 @@ class MainActivity : AppCompatActivity() {
             // For now, allow text trace.
             android.widget.Toast.makeText(this, "Error initializing UI: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
         }
-
-        // Initialize Repositories (To be injected into Fragments later via Hilt or custom Factory)
-        // val settingsRepository = SettingsRepository(applicationContext) // Already initialized above
-
-        // Observe Theme and apply dynamically - Redundant now as it's handled on activity recreation
-        /*
-        val settingsViewModel = SettingsViewModelFactory(settingsRepository).create(com.mfp.filemanager.ui.viewmodels.SettingsViewModel::class.java)
-        
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                 settingsViewModel.settingsState.collect { state ->
-                     val mode = when (state.themeMode) {
-                         1 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
-                         2 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-                         3 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES // AMOLED is also Dark
-                         else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                     }
-                     if (androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode() != mode) {
-                         androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode)
-                     }
-                 }
-            }
-        }
-        */
         
         audioViewModel.initializeController(this)
         
@@ -221,11 +178,7 @@ class MainActivity : AppCompatActivity() {
         transition.setDuration(android.animation.LayoutTransition.DISAPPEARING, 300)
         transition.enableTransitionType(android.animation.LayoutTransition.CHANGING)
         binding.bottomBarContainer.layoutTransition = transition
-        
-        // Initialize Progress Controller
-        // 'file_progress_layout' in activity_main.xml includes '@layout/layout_file_progress'
-        // ViewBinding automatically generates a field 'fileProgressLayout' of type 'LayoutFileProgressBinding'
-        // So we can pass it directly.
+
         fileProgressController = FileProgressController(binding.fileProgressLayout) { isVisible ->
             if (isVisible) {
                  binding.bottomBarContainer.animate()
@@ -283,23 +236,24 @@ class MainActivity : AppCompatActivity() {
             val isPlaying by audioViewModel.isPlaying.collectAsStateWithLifecycle()
             val currentTrack by audioViewModel.currentTrack.collectAsStateWithLifecycle()
             val progress by audioViewModel.progress.collectAsStateWithLifecycle()
-
-            MiniPlayer(
-                title = currentTrack?.title.toString(),
-                artist = currentTrack?.artist.toString(),
-                isPlaying = isPlaying,
-                progress = progress,
-                onPlayPause = {
-                    audioViewModel.togglePlayPause()
-                },
-                onNext = {
-                    audioViewModel.playNext()
-                },
-                onClose = {
-                    audioViewModel.stopPlayer()
-                },
-                modifier = Modifier
-            )
+            Mdc3Theme() {
+                MiniPlayer(
+                    title = currentTrack?.title.toString(),
+                    artist = currentTrack?.artist.toString(),
+                    isPlaying = isPlaying,
+                    progress = progress,
+                    onPlayPause = {
+                        audioViewModel.togglePlayPause()
+                    },
+                    onNext = {
+                        audioViewModel.playNext()
+                    },
+                    onClose = {
+                        audioViewModel.stopPlayer()
+                    },
+                    modifier = Modifier
+                )
+            }
         }
 
 
@@ -434,33 +388,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        com.mfp.filemanager.data.cache.AppCache.clear()
-    }
-
-
-
-
-
-    private fun setupGlassMorphism() {
-        // Observe Swipe Navigation Setting
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                 SettingsRepository(applicationContext).swipeNavigationEnabled.collect { enabled ->
-                     isSwipeNavEnabled = enabled
-                     binding.bottomNavContainer.visibility = if (enabled) View.GONE else View.VISIBLE
-                     
-                     // Adjust Mini Player Margin to make interface suitable
-                     val params = binding.layoutMiniPlayer.layoutParams as android.widget.FrameLayout.LayoutParams
-                     params.bottomMargin = if (enabled) {
-                         val d = resources.displayMetrics.density
-                         (24 * d).toInt() // Standard padding if Taskbar is gone
-                     } else {
-                         val d = resources.displayMetrics.density
-                         (110 * d).toInt() // Float above Taskbar if visible
-                     }
-                     binding.layoutMiniPlayer.layoutParams = params
-                 }
-            }
-        }
+        AppCache.clear()
     }
 }
