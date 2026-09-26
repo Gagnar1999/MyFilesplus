@@ -267,50 +267,6 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 launch {
-                    audioViewModel.currentTrack.collect { metadata ->
-                        // Only show if we have valid metadata (Title is mandatory)
-                        if (metadata != null && !metadata.title.isNullOrBlank()) {
-                            if (!binding.layoutMiniPlayer.isVisible) {
-                                binding.layoutMiniPlayer.visibility = View.VISIBLE
-                                // Start from behind the bottom navigation bar with fade and scale
-                                val hideTranslation = 500f
-                                binding.layoutMiniPlayer.translationY = hideTranslation
-                                binding.layoutMiniPlayer.alpha = 0f
-                                binding.layoutMiniPlayer.scaleX = 0.8f
-                                binding.layoutMiniPlayer.scaleY = 0.8f
-                                
-                                binding.layoutMiniPlayer.animate()
-                                    .translationY(0f)
-                                    .alpha(1f)
-                                    .scaleX(1f)
-                                    .scaleY(1f)
-                                    .setDuration(300)
-                                    .setInterpolator(android.view.animation.DecelerateInterpolator())
-                                    .start()
-                            }
-                        } else { // Metadata null (stopped or cleared)
-                             if (binding.layoutMiniPlayer.isVisible) {
-                                 val hideTranslation = 500f
-                                 binding.layoutMiniPlayer.animate()
-                                    .translationY(hideTranslation)
-                                    .alpha(0f)
-                                    .scaleX(0.8f)
-                                    .scaleY(0.8f)
-                                    .setDuration(250)
-                                    .withEndAction { 
-                                        binding.layoutMiniPlayer.visibility = View.GONE
-                                        // Reset alpha/scale for layout preview or next show
-                                        binding.layoutMiniPlayer.alpha = 1f
-                                        binding.layoutMiniPlayer.scaleX = 1f
-                                        binding.layoutMiniPlayer.scaleY = 1f
-                                    }
-                                    .start()
-                             }
-                        }
-                    }
-                }
-
-                launch {
                     navController.currentBackStackEntryFlow.collect { entry ->
                         val isPlayer = entry.destination.id == R.id.nav_player
                         
