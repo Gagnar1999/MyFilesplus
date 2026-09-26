@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.rounded.AddToDrive
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -185,6 +186,7 @@ fun FileItem(
     fileModel: FileModel,
     modifier: Modifier = Modifier,
     onClick: (FileModel) -> Unit = {},
+    onBackupFile : (FileModel) -> Unit = {},
     onMoreClick: () -> Unit = {}
 ) {
     ListItem(
@@ -223,12 +225,23 @@ fun FileItem(
             )
         },
         trailingContent = {
-            IconButton(onClick = onMoreClick) {
-                Icon(
-                    Icons.Rounded.MoreVert,
-                    contentDescription = "More"
-                )
+            Row() {
+
+                IconButton(onClick = {onBackupFile(fileModel)}) {
+                    Icon(
+                        Icons.Rounded.AddToDrive,
+                        contentDescription = "Backup to Drive"
+                    )
+                }
+
+                IconButton(onClick = onMoreClick) {
+                    Icon(
+                        Icons.Rounded.MoreVert,
+                        contentDescription = "More"
+                    )
+                }
             }
+
         },
         tonalElevation = 0.dp,
 

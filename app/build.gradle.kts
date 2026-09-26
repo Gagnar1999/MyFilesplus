@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -7,6 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("kotlin-parcelize")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.gms.google-services")
 }
 
 val keystorePropertiesFile = rootProject.file("signing/keystore.properties")
@@ -22,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId = "com.mfp.filemanager"
-        minSdk = 24 
+        minSdk = 24
         targetSdk = 36
         versionCode = 11
         versionName = "1.4.0"
@@ -39,7 +41,8 @@ android {
             keyAlias = keystoreProperties.getProperty("keyAlias")
             keyPassword = keystoreProperties.getProperty("keyPassword")
             if (keystoreProperties.getProperty("storeFile") != null) {
-                storeFile = rootProject.file("signing/${keystoreProperties.getProperty("storeFile")}")
+                storeFile =
+                    rootProject.file("signing/${keystoreProperties.getProperty("storeFile")}")
             }
             storePassword = keystoreProperties.getProperty("storePassword")
         }
@@ -47,16 +50,19 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false 
+            isMinifyEnabled = false
             isShrinkResources = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("release")
         }
     }
-    
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         viewBinding = true
@@ -67,15 +73,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 
     lint {
         abortOnError = false
         checkReleaseBuilds = false
     }
-    buildToolsVersion = "34.0.0"
 
     buildFeatures {
         compose = true
@@ -91,7 +93,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    
+
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
     implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
@@ -99,12 +101,12 @@ dependencies {
 
     //Compose BOM
     implementation(platform("androidx.compose:compose-bom:2026.06.01"))
-    implementation ("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
-    implementation ("androidx.compose.runtime:runtime")
-    implementation ("androidx.activity:activity-compose:1.13.0")
-    implementation ("androidx.compose.ui:ui-graphics")
-    implementation ("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.runtime:runtime")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
 
     //Theme adapter required for getting colors from xml
     implementation("com.google.accompanist:accompanist-themeadapter-material3:0.36.0")
@@ -114,6 +116,7 @@ dependencies {
     //Compose <---> Fragment Bridge
     // Image Loading (Coil View)
     implementation("androidx.fragment:fragment-compose:1.8.9")
+    implementation("com.google.firebase:firebase-auth:24.2.0")
 
     // Image Loading (Coil View)
     implementation("io.coil-kt:coil:2.7.0")
@@ -142,17 +145,35 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:3.3.3")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    
+
     // Media3 (ExoPlayer)
     implementation("androidx.media3:media3-exoplayer:1.2.0")
     implementation("androidx.media3:media3-ui:1.2.0")
     implementation("androidx.media3:media3-session:1.2.0")
     implementation("androidx.media3:media3-common:1.2.0")
     implementation("androidx.palette:palette-ktx:1.0.0")
-    
+
     // UI Utilities
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    
+
     // Work Manager
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // Guava
+    implementation("com.google.guava:guava:24.1-jre")
+// Guava fix
+    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+
+//Drive
+    implementation("com.google.api-client:google-api-client-android:1.23.0") {
+        exclude(group = "org.apache.httpcomponents")
+        exclude(module = "guava-jdk5")
+    }
+    implementation("com.google.apis:google-api-services-drive:v3-rev136-1.25.0") {
+        exclude(group = "org.apache.httpcomponents")
+        exclude(module = "guava-jdk5")
+    }
+
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
 }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -343,6 +344,7 @@ class HomeFragmentCompose : Fragment() {
         val categories by viewModel.categories.collectAsStateWithLifecycle()
         val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
         val recentFiles by viewModel.recentFiles.collectAsStateWithLifecycle()
+        val uploadStatus by viewModel.uploadStatus.collectAsStateWithLifecycle()
 
         PullToRefreshBox(onRefresh = viewModel::refreshHomeData, isRefreshing = isRefreshing) {
             LazyColumn(
@@ -350,6 +352,7 @@ class HomeFragmentCompose : Fragment() {
                     .fillMaxWidth()
                     .fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 item {
                     Text(
                         "Home",
@@ -359,6 +362,14 @@ class HomeFragmentCompose : Fragment() {
                         fontWeight = FontWeight.Bold
                     )
                 }
+
+                if(uploadStatus.isUploading) item {
+                    LinearProgressIndicator(
+                        progress = { uploadStatus.progress.toFloat() },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
                 item {
                     Grid(
                         config = {
@@ -408,7 +419,8 @@ class HomeFragmentCompose : Fragment() {
                         else
                             Icons.Rounded.Description,
                         it,
-                        onClick = ::onFileItemClick
+                        onClick = ::onFileItemClick,
+                        onBackupFile = viewModel::onBackupFile
                     )
                 }
 

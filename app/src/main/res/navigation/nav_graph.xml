@@ -6,6 +6,12 @@
     app:startDestination="@id/nav_main_pager">
 
     <fragment
+        android:id="@+id/nav_drive_fragment"
+        android:name="com.mfp.filemanager.ui.fragments.LoginFragment"
+        android:label="Drive"
+        />
+
+    <fragment
         android:id="@+id/nav_main_pager"
         android:name="com.mfp.filemanager.ui.fragments.MainPagerFragment"
         android:label="File Manager"

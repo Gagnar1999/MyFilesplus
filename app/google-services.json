@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "377377154074",
+    "firebase_url": "https://compose-d520f-default-rtdb.firebaseio.com",
+    "project_id": "compose-d520f",
+    "storage_bucket": "compose-d520f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377377154074:android:b6cc013b29551cb2ecdda3",
+        "android_client_info": {
+          "package_name": "com.example.compapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIym7o7Te4PcnL7LrOr9EogyJdRg1WRF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377377154074:android:8ce7b92dd096aa6decdda3",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIym7o7Te4PcnL7LrOr9EogyJdRg1WRF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377377154074:android:d374feb9179443c7ecdda3",
+        "android_client_info": {
+          "package_name": "com.mfp.filemanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIym7o7Te4PcnL7LrOr9EogyJdRg1WRF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
