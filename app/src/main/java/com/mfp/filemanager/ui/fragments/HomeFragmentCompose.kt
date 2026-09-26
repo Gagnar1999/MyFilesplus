@@ -3,11 +3,15 @@ package com.mfp.filemanager.ui.fragments
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.GridTrackSize.Companion.Percentage
@@ -17,6 +21,7 @@ import androidx.compose.foundation.layout.columns
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,9 +30,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -36,6 +43,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -363,7 +372,7 @@ class HomeFragmentCompose : Fragment() {
                     )
                 }
 
-                if(uploadStatus.isUploading) item {
+                if (uploadStatus.isUploading) item {
                     LinearProgressIndicator(
                         progress = { uploadStatus.progress.toFloat() },
                         modifier = Modifier.fillMaxWidth(),
@@ -381,6 +390,73 @@ class HomeFragmentCompose : Fragment() {
                     ) {
                         repeat(categories.size) { pos ->
                             GridItem(categories[pos])
+                        }
+                    }
+                }
+
+                item {
+                    Column(modifier = Modifier
+                        .heightIn(min = 50.dp)
+                        .padding(horizontal = 20.dp)) {
+                        Text("All Storage")
+
+                        Row(
+                            modifier.padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Surface(
+                                modifier = Modifier
+                                    .weight(0.45f)
+                                    .padding(end = 4.dp)
+                                    .border(
+                                        BorderStroke(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        ), shape = RoundedCornerShape(20)
+                                    )
+                                    .padding(10.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painterResource(R.drawable.ic_mobile_phone),
+                                        modifier = Modifier.size(24.dp),
+                                        tint = MaterialTheme.colorScheme.primaryContainer,
+                                        contentDescription = null
+                                    )
+                                    Text(
+                                        "Internal Storage",
+                                        modifier = Modifier.padding(start = 8.dp),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                modifier = Modifier
+                                    .weight(0.45f)
+                                    .padding(start = 4.dp)
+                                    .border(
+                                        BorderStroke(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        ), shape = RoundedCornerShape(20)
+                                    )
+                                    .padding(10.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        painterResource(R.drawable.ic_sd_card),
+                                        modifier = Modifier.size(24.dp),
+                                        tint = MaterialTheme.colorScheme.primaryContainer,
+                                        contentDescription = null
+                                    )
+                                    Text(
+                                        "Other Storage",
+                                        modifier = Modifier.padding(start = 8.dp),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -411,6 +487,8 @@ class HomeFragmentCompose : Fragment() {
                         }
                     }
                 }
+
+
 
                 items(recentFiles) {
                     FileItem(

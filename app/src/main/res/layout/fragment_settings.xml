@@ -81,6 +81,7 @@
             android:paddingHorizontal="24dp"
             android:paddingVertical="16dp"
             android:text="Swipe Navigation"
+            style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
             android:textAppearance="?attr/textAppearanceTitleMedium" />
 
         <!-- Privacy Section -->
@@ -107,6 +108,7 @@
             android:layout_height="wrap_content"
             android:padding="24dp"
             android:text="Show Hidden Files"
+            style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
             android:textAppearance="?attr/textAppearanceTitleMedium" />
 
 
@@ -206,6 +208,7 @@
             android:paddingHorizontal="24dp"
             android:paddingVertical="16dp"
             android:text="Automatic Check"
+            style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
             android:textAppearance="?attr/textAppearanceTitleMedium" />
 
         <LinearLayout

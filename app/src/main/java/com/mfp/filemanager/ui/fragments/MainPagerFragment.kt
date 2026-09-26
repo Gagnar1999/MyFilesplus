@@ -75,7 +75,7 @@ class MainPagerFragment : Fragment() {
     }
 
     private inner class MainPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-        override fun getItemCount(): Int = 4
+        override fun getItemCount(): Int = 5
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
