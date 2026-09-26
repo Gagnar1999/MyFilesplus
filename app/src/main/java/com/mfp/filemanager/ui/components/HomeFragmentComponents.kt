@@ -49,17 +49,13 @@ import com.mfp.filemanager.data.FileModel
 
 @Composable
 fun GridItem(
-    category: CategoryItem,
-    modifier: Modifier = Modifier
+    category: CategoryItem, modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val animatedProgress by animateFloatAsState(
-        targetValue = category.progress,
-        animationSpec = tween(
-            durationMillis = 700,
-            easing = LinearEasing
-        ),
-        label = "storage_progress"
+        targetValue = category.progress, animationSpec = tween(
+            durationMillis = 700, easing = LinearEasing
+        ), label = "storage_progress"
     )
 
 
@@ -68,13 +64,9 @@ fun GridItem(
             .fillMaxWidth()
             .clickable {
                 // Open selected category
-            },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor =
-                MaterialTheme.colorScheme.surfaceContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            }, shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -83,29 +75,22 @@ fun GridItem(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme
-                        .colorScheme
-                        .primaryContainer
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Icon(
                         imageVector = getCategoryIcon(category.id),
                         contentDescription = null,
                         modifier = Modifier.padding(6.dp),
-                        tint = MaterialTheme
-                            .colorScheme
-                            .onPrimaryContainer
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = category.label,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = category.label, fontSize = 16.sp, fontWeight = FontWeight.SemiBold
                 )
             }
 
@@ -117,26 +102,20 @@ fun GridItem(
             // Storage percentage
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement =
-                    Arrangement.SpaceBetween,
-                verticalAlignment =
-                    Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "Storage used",
                     fontSize = 12.sp,
-                    color = MaterialTheme
-                        .colorScheme
-                        .onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Text(
                     text = category.storageUsedReadable,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme
-                        .colorScheme
-                        .primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -155,12 +134,8 @@ fun GridItem(
                     .clip(
                         RoundedCornerShape(50)
                     ),
-                color = MaterialTheme
-                    .colorScheme
-                    .primary,
-                trackColor = MaterialTheme
-                    .colorScheme
-                    .surfaceVariant
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
     }
@@ -186,8 +161,8 @@ fun FileItem(
     fileModel: FileModel,
     modifier: Modifier = Modifier,
     onClick: (FileModel) -> Unit = {},
-    onBackupFile : (FileModel) -> Unit = {},
-    onMoreClick: () -> Unit = {}
+    onBackupFile: ((FileModel) -> Unit)? = null,
+    onMoreClick: (() -> Unit)? = null
 ) {
     ListItem(
         modifier = modifier
@@ -226,24 +201,25 @@ fun FileItem(
         },
         trailingContent = {
             Row() {
-
-                IconButton(onClick = {onBackupFile(fileModel)}) {
-                    Icon(
-                        Icons.Rounded.AddToDrive,
-                        contentDescription = "Backup to Drive"
-                    )
+                if (onBackupFile != null) {
+                    IconButton(onClick = { onBackupFile.invoke(fileModel) }) {
+                        Icon(
+                            Icons.Rounded.AddToDrive, contentDescription = "Backup to Drive"
+                        )
+                    }
                 }
 
-                IconButton(onClick = onMoreClick) {
-                    Icon(
-                        Icons.Rounded.MoreVert,
-                        contentDescription = "More"
-                    )
+                if(onMoreClick != null) {
+                    IconButton(onClick = { onMoreClick?.invoke() }) {
+                        Icon(
+                            Icons.Rounded.MoreVert, contentDescription = "More"
+                        )
+                    }
                 }
             }
 
         },
         tonalElevation = 0.dp,
 
-    )
+        )
 }
